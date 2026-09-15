@@ -1,0 +1,1155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Field Plan Calculator — Dirtroad Organizing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+/* Brand tokens from dirtroadorganizing.org: ink #001726, navy #001f33,
+   gold #fedd00, white. mist/panel/muted are navy-tinted local extensions for
+   data surfaces. Scoped under #drc so the artifact pastes into a Squarespace
+   code block without touching the host page. */
+#drc{
+  --ink:#001726; --navy:#001f33; --gold:#fedd00;
+  --paper:#ffffff; --mist:#e7eef4; --panel:#f3f7fa;
+  --muted:#4a5464; --gold-ink:#8a7500;
+  --maxw:1180px;
+  all:initial; display:block;
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--ink); background:var(--paper);
+  font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+#drc *,#drc *::before,#drc *::after{box-sizing:border-box}
+#drc .wrap{max-width:var(--maxw);margin:0 auto;padding:28px 24px 64px}
+
+/* Type: Lora carries the figures and headlines; system sans carries labels. */
+#drc .eyebrow{
+  font-size:.64rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.22em;color:var(--muted);margin:0 0 4px;
+}
+#drc h1{
+  font-family:"Lora",ui-serif,Georgia,serif;font-weight:600;
+  font-size:clamp(28px,3.6vw,40px);line-height:1.05;letter-spacing:-.015em;
+  margin:0;color:var(--ink);
+}
+#drc h2{font-family:"Lora",ui-serif,Georgia,serif;font-weight:600;font-size:20px;margin:0;color:var(--ink)}
+#drc .lede{margin:10px 0 0;max-width:66ch;color:var(--muted);font-size:15.5px}
+#drc .lede em{font-style:italic;color:var(--ink)}
+#drc .hero{
+  display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+  gap:10px 24px;padding-bottom:26px;
+}
+#drc .hero-copy{flex:1 1 auto;min-width:0}
+#drc .hero-fields{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px}
+
+#drc section{margin:0 0 44px}
+
+/* ---- The timeline: the centrepiece ------------------------------------ */
+#drc .hero-field{display:flex;flex-direction:column;gap:1px}
+#drc .hero-field span{
+  font-size:.6rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:.14em;color:var(--muted);
+}
+#drc .hero-field input{
+  font-family:"Lora",ui-serif,Georgia,serif;font-weight:600;
+  color:var(--ink);background:transparent;border:none;border-bottom:1px solid var(--mist);
+  padding:2px 0 4px;width:auto;
+}
+#drc .hero-field input[type=number]{width:8ch}
+#drc .hero-field input:focus{outline:none;border-bottom-color:var(--navy)}
+
+#drc .timeline-wrap{position:relative;background:var(--panel);border:1px solid var(--mist);margin-top:18px}
+#drc .timeline-wrap svg{width:100%;height:auto;display:block}
+#drc .timeline-wrap input[type=range]{
+  position:absolute;top:0;width:auto;height:100%;
+  margin:0;opacity:0;cursor:ew-resize;-webkit-appearance:none;appearance:none;
+}
+#drc .timeline-wrap:focus-within{outline:2px solid var(--gold);outline-offset:3px}
+/* The scrub tally: the field's day sheet. Numbers are Lora tabular figures,
+   column heads are the same letterspaced sans as the control groups, and the two
+   knocker rows carry the timeline's own area swatches so the split reads the
+   same in the table as it does in the chart. */
+#drc .timeline-readout{margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#drc .tally{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+#drc .tally caption{
+  padding:0 0 7px;text-align:left;
+  font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
+}
+#drc .tally caption b{color:var(--ink);font-weight:700}
+#drc .tally th:first-child,#drc .tally td:first-child{width:18%}
+#drc .tally th,#drc .tally td{padding:5px 0 5px 14px;text-align:right;vertical-align:baseline}
+#drc .tally thead th{
+  padding-top:8px;padding-bottom:5px;border-bottom:1px solid var(--mist);
+  font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.11em;
+  color:var(--muted);white-space:nowrap;
+}
+#drc .tally tbody th,#drc .tally tfoot th{text-align:left;padding-left:0;white-space:nowrap}
+#drc .tally tbody th{font-weight:500;color:var(--ink)}
+#drc .tally td{
+  font-family:"Lora",ui-serif,Georgia,serif;font-weight:600;
+  color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+#drc .tally .tally-none{color:var(--muted);font-weight:400;opacity:.6}
+#drc .tally tfoot th,#drc .tally tfoot td{border-top:1px solid var(--mist);color:var(--navy);font-weight:700}
+#drc .tally-key{
+  display:inline-block;width:13px;height:9px;margin-right:7px;
+  border:1px solid var(--mist);vertical-align:baseline;
+}
+#drc .sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+#drc .lede-note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+
+#drc .legend{
+  display:none;flex-wrap:wrap;gap:8px 18px;margin-top:10px;
+  font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+}
+#drc .legend span{display:inline-flex;align-items:center;gap:6px}
+#drc .key-line{width:18px;height:0;border-top:3px solid var(--navy);display:inline-block}
+#drc .key-gold{width:18px;height:0;border-top:3px solid var(--gold-ink);display:inline-block}
+#drc .key-dash{width:18px;height:0;border-top:2px dashed var(--muted);display:inline-block}
+#drc .key-area i{
+  width:15px;height:10px;display:inline-block;border:1px solid var(--mist);
+  background:var(--panel);
+}
+#drc .key-area.vol i{background:linear-gradient(rgba(31,95,143,.32),rgba(31,95,143,.32)),var(--panel)}
+#drc .key-area.cand i{background:linear-gradient(rgba(254,221,0,.28),rgba(254,221,0,.28)),var(--panel)}
+
+/* ---- Controls: full width, three groups ------------------------------- */
+#drc .controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 30px}
+#drc .ctl-group{min-width:0;border-top:1px solid var(--mist);padding-top:10px}
+#drc .ctl-k{
+  display:flex;align-items:center;gap:7px;margin:0 0 8px;
+  font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);
+}
+#drc .ctl-k::before{content:"";width:11px;height:3px;background:var(--gold);flex:0 0 auto}
+#drc .ctl{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:2px 10px;padding:6px 0 0}
+#drc .ctl label{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.35}
+#drc .ctl output{
+  font-family:"Lora",ui-serif,Georgia,serif;font-weight:600;font-size:15px;
+  color:var(--navy);font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+#drc .ctl output small{font-family:system-ui,sans-serif;font-weight:400;font-size:11px;color:var(--muted)}
+#drc .ctl .wide{grid-column:1/-1}
+#drc .hint{grid-column:1/-1;font-size:11.5px;color:var(--muted);margin:1px 0 2px}
+
+/* Inputs */
+#drc input[type=number],#drc input[type=date]{
+  font-family:"Lora",ui-serif,Georgia,serif;font-weight:600;font-size:20px;
+  color:var(--ink);background:transparent;width:100%;border-radius:0;
+  border:none;border-bottom:1px solid var(--mist);padding:3px 0 5px;
+  font-variant-numeric:tabular-nums;
+}
+#drc input[type=number]:focus,#drc input[type=date]:focus{outline:none;border-bottom-color:var(--navy)}
+#drc input[type=range]{
+  -webkit-appearance:none;appearance:none;width:100%;height:22px;
+  background:transparent;cursor:pointer;margin:0;grid-column:1/-1;
+}
+#drc input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--mist);border-radius:2px}
+#drc input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--navy);margin-top:-6px;border:3px solid var(--paper);
+  box-shadow:0 0 0 1px var(--navy);
+}
+#drc input[type=range]:focus{outline:none}
+#drc input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px var(--gold)}
+#drc input[type=range]::-moz-range-track{height:4px;background:var(--mist);border-radius:2px}
+#drc input[type=range]::-moz-range-thumb{
+  width:12px;height:12px;border-radius:50%;background:var(--navy);
+  border:2px solid var(--paper);box-shadow:0 0 0 1px var(--navy);
+}
+
+#drc .foot{
+  margin-top:20px;padding-top:14px;border-top:1px solid var(--mist);
+  font-size:13px;color:var(--muted);
+}
+#drc .foot a{color:var(--navy);text-decoration:underline;text-underline-offset:2px}
+#drc .foot p{margin:0}
+#drc .foot .foot-actions{margin-top:6px;display:flex;flex-wrap:wrap;gap:14px}
+#drc .linklike{
+  background:none;border:0;padding:0;margin:0;font:inherit;color:var(--navy);
+  text-decoration:underline;text-underline-offset:2px;cursor:pointer;
+}
+
+/* ---- How the model works ---------------------------------------------- */
+#drc [hidden]{display:none}
+#drc .model-hero{padding-bottom:10px;border-bottom:1px solid var(--mist)}
+#drc .model-hero h1:focus{outline:none}
+#drc .model-back{margin:14px 0 0;font-size:13px}
+#drc .model-lede{margin:22px 0 0;max-width:66ch;color:var(--muted);font-size:15.5px}
+
+/* Each step of the model is a waypoint on a dashed route, the same dashed
+   line the reader already reads on the timeline. */
+#drc .model-step{
+  position:relative;display:grid;grid-template-columns:52px minmax(0,1fr);column-gap:18px;
+  border-top:1px solid var(--mist);padding:20px 0 12px;
+}
+#drc .model-step:first-of-type{border-top:none;padding-top:12px}
+#drc .model-step::before{
+  content:"";position:absolute;left:26px;top:0;bottom:0;border-left:2px dashed var(--mist);
+}
+#drc .model-step h2{grid-column:2;grid-row:1;align-self:baseline}
+#drc .model-num{
+  grid-column:1;grid-row:1;justify-self:center;position:relative;z-index:1;
+  background:var(--paper);padding:0 6px;
+  font-family:"Lora",ui-serif,Georgia,serif;font-weight:600;font-size:13px;
+  letter-spacing:.04em;color:var(--gold-ink);font-variant-numeric:tabular-nums;
+}
+#drc .model-body{grid-column:2;min-width:0}
+#drc .model-body > p{margin:10px 0 0;font-size:15px;color:var(--ink);max-width:64ch}
+#drc .model-plate{
+  margin:14px 0 0;max-width:64ch;background:var(--panel);
+  border:1px solid var(--mist);border-left:3px solid var(--gold);padding:11px 15px;
+}
+#drc .model-eq{
+  margin:0;white-space:pre-line;
+  font-family:"Lora",ui-serif,Georgia,serif;font-weight:500;font-size:14.5px;line-height:1.7;
+  color:var(--navy);font-variant-numeric:tabular-nums;
+}
+#drc :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+@media (max-width:1040px){
+  #drc .controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:880px){
+  #drc .legend{display:flex}
+}
+@media (max-width:760px){
+  /* Too narrow for six columns of figures: the day sheet unstacks into one
+     block per knocker, each cell carrying its own column label. */
+  #drc .tally,#drc .tally tbody,#drc .tally tfoot,#drc .tally tr,#drc .tally th,#drc .tally td{display:block}
+  #drc .tally thead{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  #drc .tally caption{display:block;width:100%}
+  #drc .tally tr{border-top:1px solid var(--mist);padding:9px 0}
+  #drc .tally th,#drc .tally td{padding:0;text-align:left;border:none;white-space:normal}
+  #drc .tally th[scope=row]{margin-bottom:4px;font-weight:600}
+  #drc .tally td{display:inline-flex;align-items:baseline;gap:6px;margin:0 18px 2px 0}
+  #drc .tally td::before{
+    content:attr(data-label);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+  }
+}
+@media (max-width:700px){
+  #drc .controls{grid-template-columns:1fr}
+  #drc .model-step{grid-template-columns:34px minmax(0,1fr);column-gap:12px}
+  #drc .model-step::before{left:17px}
+}
+@media (prefers-reduced-motion:reduce){
+  #drc *{transition:none !important}
+}
+
+</style>
+</head>
+<body>
+<div id="drc">
+  <div class="wrap" id="drc-calc">
+    <header class="hero">
+      <div class="hero-copy">
+        <h1>Field math.</h1>
+        <p class="lede">Will your current field operation hit your goal by election day? That's what this calculator helps you answer. Set the sliders to find a pace that works for you.</p>
+      </div>
+      <div class="hero-fields">
+        <label class="hero-field" for="f-target">
+          <span>Vote goal</span>
+          <input id="f-target" type="number" min="1" inputmode="numeric" value="1000">
+        </label>
+        <label class="hero-field" for="f-date">
+          <span>Election Day</span>
+          <input id="f-date" type="date">
+        </label>
+      </div>
+    </header>
+
+    <section class="timeline-sec">
+      <div class="controls">
+        <div class="ctl-group">
+          <p class="ctl-k">Volunteers</p>
+          <div class="ctl">
+            <label for="s-volunteers">Volunteers now</label>
+            <output id="v-volunteers"></output>
+            <input id="s-volunteers" class="wide" type="range" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="ctl">
+            <label for="s-recruit">New volunteers each week</label>
+            <output id="v-recruit"></output>
+            <input id="s-recruit" class="wide" type="range" min="0" max="20" step="1" value="0">
+          </div>
+          <div class="ctl">
+            <label for="s-attrition">Volunteers lost each week</label>
+            <output id="v-attrition"></output>
+            <input id="s-attrition" class="wide" type="range" min="0" max="100" step="1" value="10">
+          </div>
+        </div>
+
+        <div class="ctl-group">
+          <p class="ctl-k">Hours</p>
+          <div class="ctl">
+            <label for="s-volhours">Hours each volunteer per week</label>
+            <output id="v-volhours"></output>
+            <input id="s-volhours" class="wide" type="range" min="0" max="20" step="1" value="4">
+          </div>
+          <div class="ctl">
+            <label for="s-candhours">Candidate hours per week</label>
+            <output id="v-candhours"></output>
+            <input id="s-candhours" class="wide" type="range" min="0" max="40" step="1" value="20">
+          </div>
+        </div>
+
+        <div class="ctl-group">
+          <p class="ctl-k">Yield</p>
+          <div class="ctl">
+            <label for="s-pace">Knock rate</label>
+            <output id="v-pace"></output>
+            <input id="s-pace" class="wide" type="range" min="2" max="20" step="1" value="10">
+          </div>
+          <div class="ctl">
+            <label for="s-contact">Contact rate</label>
+            <output id="v-contact"></output>
+            <input id="s-contact" class="wide" type="range" min="0" max="100" step="1" value="25">
+          </div>
+          <div class="ctl">
+            <label for="s-confirm">Confirmation rate</label>
+            <output id="v-confirm"></output>
+            <input id="s-confirm" class="wide" type="range" min="0" max="100" step="1" value="60">
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-wrap">
+        <svg id="timeline-chart" viewBox="0 0 820 300" role="img" aria-label="Conversations from volunteers and the candidate, and confirmed votes, over time against the vote-goal line"></svg>
+        <input id="s-scrub" type="range" min="0" max="50" step="1" value="0" aria-label="Walk the campaign day by day">
+      </div>
+      <div class="timeline-readout" id="o-scrub-readout" aria-live="polite"></div>
+      <div class="legend">
+        <span class="key-area vol"><i></i>Volunteer</span>
+        <span class="key-area cand"><i></i>Candidate</span>
+        <span><i class="key-line"></i>Conversations</span>
+        <span><i class="key-gold"></i>Confirmed Votes</span>
+        <span><i class="key-dash"></i>Vote Goal</span>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>Disclaimer: This tool is for pacing your field plan. It is not a predictive model. Your mileage may vary. Feedback welcome!</p>
+      <p class="foot-actions">
+        <button type="button" class="linklike" id="open-model">Peer review the model</button>
+        <a href="https://github.com/dirtroadcode/field-math" target="_blank" rel="noopener">Source on GitHub</a>
+      </p>
+    </footer>
+  </div>
+
+  <div class="wrap model-view" id="drc-model" hidden>
+    <header class="model-hero">
+      <p class="eyebrow">The model</p>
+      <h1 id="model-title" tabindex="-1">How the model works</h1>
+      <p class="model-back"><button type="button" class="linklike" id="close-model">Back to the calculator</button></p>
+    </header>
+    <div id="o-model" class="model-body"></div>
+  </div>
+</div>
+
+<script>
+// Election Day defaults to the first Tuesday after the first Monday in
+// November — the US general election date. All functions are pure: callers
+// pass "today" explicitly so results are deterministic and testable.
+
+function firstTuesdayOf(year) {
+  const nov1 = new Date(year, 10, 1);
+  const dow = nov1.getDay(); // 0=Sun..6=Sat
+  const daysToFirstMonday = dow === 1 ? 0 : (8 - dow) % 7;
+  return new Date(year, 10, 1 + daysToFirstMonday + 1);
+}
+
+function defaultElection(today) {
+  let d = firstTuesdayOf(today.getFullYear());
+  if (d <= today) d = firstTuesdayOf(today.getFullYear() + 1);
+  return d;
+}
+
+function formatDefaultElection(today) {
+  const d = defaultElection(today);
+  const pad = (n) => (n < 10 ? "0" : "") + n;
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+}
+// The field plan model. plan() sizes the universe at rest; simulate() runs it
+// day by day so volunteer growth and attrition bend the timeline.
+//
+// There is one universe, sized from the vote goal. Volunteers and the candidate
+// knock the same pool: every person moves uncontacted → contacted-unconfirmed
+// (a holdout) → confirmed. Each day the field's capacity goes to uncontacted
+// doors first; only leftover capacity revisits holdouts, so holdouts wait until
+// the uncontacted pool is spent. A knock reaches at the contact rate and every
+// reach is a conversation — first contact or revisit alike — so the
+// conversation count keeps climbing as holdouts are reworked. Nobody leaves the
+// universe until they confirm.
+
+
+const DEFAULTS = {
+  voteGoal: 1000,
+  volunteers: 0,
+  recruitPerWeek: 0,
+  attritionPerWeek: 0.1,
+  hoursPerVolunteerPerWeek: 4,
+  candidateHoursPerWeek: 20,
+  knockRate: 10,
+  contactRate: 0.25,
+  confirmationRate: 0.6,
+};
+
+const DAY = 86400000;
+const GOTV_WINDOW_DAYS = 28;
+// People are whole, so a pool with less than one person left is exhausted.
+const ONE_PERSON = 1;
+
+function fail(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+function normalize(input) {
+  const i = { ...DEFAULTS, ...(input ?? {}) };
+  fail(i.voteGoal > 0, "vote goal must be positive");
+  fail(i.knockRate > 0, "knock rate must be positive");
+  fail(i.hoursPerVolunteerPerWeek >= 0, "hours per volunteer per week cannot be negative");
+  fail(i.candidateHoursPerWeek >= 0, "candidate hours per week cannot be negative");
+  fail(i.volunteers >= 0, "volunteers cannot be negative");
+  fail(i.recruitPerWeek >= 0, "recruitment cannot be negative");
+  fail(i.attritionPerWeek >= 0 && i.attritionPerWeek <= 1, "attrition must be between 0 and 1");
+  fail(i.contactRate >= 0 && i.contactRate <= 1, "contact rate must be between 0 and 1");
+  fail(i.confirmationRate >= 0 && i.confirmationRate <= 1, "confirmation rate must be between 0 and 1");
+
+  const today = i.today ?? new Date();
+  const election = i.election ?? defaultElection(today);
+  fail(election > today, "election day must be in the future");
+  return { i, today, election };
+}
+
+function sizing(i) {
+  const universe = i.voteGoal;
+  return {
+    universe,
+    hours: universe / i.knockRate,
+  };
+}
+
+function aggregates(i, today, election) {
+  const { universe, hours } = sizing(i);
+  const daysRemaining = Math.round((election - today) / DAY);
+  const weeksRemaining = Math.max(0, Math.floor(daysRemaining / 7));
+  const gotvStart = new Date(election.getTime() - GOTV_WINDOW_DAYS * DAY);
+
+  return {
+    universe,
+    total: { doors: universe, hours },
+    schedule: { daysRemaining, weeksRemaining, gotvStart, inGotvWindow: gotvStart <= today },
+    voteGoal: universe,
+    values: i,
+    today,
+    election,
+  };
+}
+
+function plan(input) {
+  const { i, today, election } = normalize(input);
+  return aggregates(i, today, election);
+}
+
+// One day of the field's shared capacity against the universe. A door is
+// knocked at most once a day, so the two knockers split the pool rather than
+// each re-knocking the other's unanswered doors: capacity always goes to
+// uncontacted doors first, and only leftover revisits holdouts — those already
+// contacted but not confirmed. Every reach is a conversation; a conversation
+// confirms at the confirmation rate, and the rest stay holdouts for a later
+// pass. Missed knocks leave a lit drop.
+function workDay(pool, volunteerCapacity, candidateCapacity, contactRate, confirmationRate) {
+  const capacity = volunteerCapacity + candidateCapacity;
+  const priorHoldouts = pool.holdouts;
+
+  const freshKnocks = Math.min(pool.uncontacted, capacity);
+  const volunteerFresh = Math.min(volunteerCapacity, freshKnocks);
+  const candidateFresh = freshKnocks - volunteerFresh;
+
+  const revisitKnocks = Math.min(priorHoldouts, capacity - freshKnocks);
+  const volunteerRevisit = Math.min(volunteerCapacity - volunteerFresh, revisitKnocks);
+  const candidateRevisit = revisitKnocks - volunteerRevisit;
+
+  const freshReach = freshKnocks * contactRate;
+  const revisitReach = revisitKnocks * contactRate;
+  const contacts = freshReach + revisitReach;
+  const confirmations = contacts * confirmationRate;
+
+  pool.uncontacted -= freshReach;
+  pool.holdouts += freshReach - freshReach * confirmationRate - revisitReach * confirmationRate;
+
+  const volunteerKnocks = volunteerFresh + volunteerRevisit;
+  const candidateKnocks = candidateFresh + candidateRevisit;
+  return {
+    knocks: freshKnocks + revisitKnocks,
+    volunteerKnocks,
+    candidateKnocks,
+    contacts,
+    volunteerContacts: volunteerKnocks * contactRate,
+    candidateContacts: candidateKnocks * contactRate,
+    confirmations,
+    lit: freshKnocks + revisitKnocks - contacts,
+  };
+}
+
+// The day loop. Day 0 is today: the starting state, no work done. Each later
+// day knocks what the volunteers and the candidate can, then recruits and
+// losses land.
+function runDays(i, today, election, attritionPerWeek) {
+  const { universe } = sizing(i);
+  const totalDays = Math.max(1, Math.round((election - today) / DAY));
+  const volunteerDoorsPerDay = (i.hoursPerVolunteerPerWeek * i.knockRate) / 7;
+  const candidateDoorsPerDay = (i.candidateHoursPerWeek * i.knockRate) / 7;
+  const recruitPerDay = i.recruitPerWeek / 7;
+  const attritionPerDay = attritionPerWeek / 7;
+
+  const pool = { uncontacted: universe, holdouts: 0 };
+
+  const days = [];
+  let volunteers = i.volunteers;
+  let cumContacts = 0;
+  let cumVolunteerContacts = 0;
+  let cumCandidateContacts = 0;
+  let cumConfirmations = 0;
+  let cumVolunteerConfirmations = 0;
+  let cumCandidateConfirmations = 0;
+  let cumLitDrops = 0;
+  let cumVolunteerLitDrops = 0;
+  let cumCandidateLitDrops = 0;
+  let cumKnocks = 0;
+  let cumVolunteerKnocks = 0;
+  let cumCandidateKnocks = 0;
+  let uncontactedFinishDay = null;
+  let goalMetDay = null;
+
+  for (let d = 0; d <= totalDays; d++) {
+    let knocked = 0;
+    let contactsToday = 0;
+    let volunteerContactsToday = 0;
+    let candidateContactsToday = 0;
+    let confirmedToday = 0;
+    let litToday = 0;
+
+    if (d > 0) {
+      // The field knocks until confirmations cross the vote goal; after that it
+      // has done its job and the curves flatten. People are whole, so a
+      // sub-person residue in the confirmation count counts as arrived.
+      const goalMet = Math.round(cumConfirmations) >= universe;
+      if (!goalMet) {
+        const w = workDay(pool, volunteers * volunteerDoorsPerDay, candidateDoorsPerDay, i.contactRate, i.confirmationRate);
+        knocked = w.knocks;
+        contactsToday = w.contacts;
+        volunteerContactsToday = w.volunteerContacts;
+        candidateContactsToday = w.candidateContacts;
+        confirmedToday = w.confirmations;
+        litToday = w.lit;
+        cumContacts += contactsToday;
+        cumVolunteerContacts += volunteerContactsToday;
+        cumCandidateContacts += candidateContactsToday;
+        cumConfirmations += confirmedToday;
+        cumVolunteerConfirmations += w.volunteerContacts * i.confirmationRate;
+        cumCandidateConfirmations += w.candidateContacts * i.confirmationRate;
+        cumLitDrops += litToday;
+        cumVolunteerLitDrops += w.volunteerKnocks - w.volunteerContacts;
+        cumCandidateLitDrops += w.candidateKnocks - w.candidateContacts;
+        cumKnocks += w.knocks;
+        cumVolunteerKnocks += w.volunteerKnocks;
+        cumCandidateKnocks += w.candidateKnocks;
+      }
+
+      if (uncontactedFinishDay === null && pool.uncontacted < ONE_PERSON) uncontactedFinishDay = d;
+      if (goalMetDay === null && Math.round(cumConfirmations) >= universe) goalMetDay = d;
+
+      volunteers = Math.max(0, volunteers + recruitPerDay - volunteers * attritionPerDay);
+    }
+
+    days.push({
+      day: d,
+      date: new Date(today.getTime() + d * DAY),
+      volunteers,
+      knocked,
+      contactsToday,
+      volunteerContactsToday,
+      candidateContactsToday,
+      confirmedToday,
+      litToday,
+      cumContacts,
+      cumVolunteerContacts,
+      cumCandidateContacts,
+      cumConfirmations,
+      cumVolunteerConfirmations,
+      cumCandidateConfirmations,
+      cumLitDrops,
+      cumVolunteerLitDrops,
+      cumCandidateLitDrops,
+      cumKnocks,
+      cumVolunteerKnocks,
+      cumCandidateKnocks,
+      remainingUncontacted: pool.uncontacted,
+      remainingHoldouts: pool.holdouts,
+    });
+  }
+
+  return { days, uncontactedFinishDay, goalMetDay, totalDays, volunteerDoorsPerDay, candidateDoorsPerDay };
+}
+
+function simulate(input) {
+  const { i, today, election } = normalize(input);
+  const agg = aggregates(i, today, election);
+  const run = runDays(i, today, election, i.attritionPerWeek);
+  const kept = i.attritionPerWeek > 0 ? runDays(i, today, election, 0) : run;
+
+  const final = run.days[run.days.length - 1];
+  const projected = final.cumConfirmations;
+  const conversations = final.cumContacts;
+  const weeks = run.totalDays / 7;
+  const doorsPerVolunteer = i.hoursPerVolunteerPerWeek * i.knockRate * weeks;
+  const peakVolunteers = run.days.reduce((m, d) => Math.max(m, d.volunteers), 0);
+
+  const outcome = {
+    conversations,
+    conversationShare: conversations / agg.voteGoal,
+    voteGoalMet: run.goalMetDay !== null,
+    goalMetDay: run.goalMetDay,
+    goalMetDate: run.goalMetDay === null ? null : run.days[run.goalMetDay].date,
+    uncontactedFinishDay: run.uncontactedFinishDay,
+    projected,
+    confirmedShare: projected / agg.voteGoal,
+    gap: Math.max(0, agg.voteGoal - projected),
+    goalMetDayNoAttrition: kept.goalMetDay,
+    startVolunteers: i.volunteers,
+    finalVolunteers: final.volunteers,
+    peakVolunteers,
+    volunteersNeeded: doorsPerVolunteer > 0 ? Math.ceil(agg.voteGoal / doorsPerVolunteer) : Infinity,
+    equilibriumVolunteers: i.attritionPerWeek > 0 ? i.recruitPerWeek / i.attritionPerWeek : Infinity,
+  };
+
+  return {
+    ...agg,
+    days: run.days,
+    totalDays: run.totalDays,
+    capacity: {
+      volunteerDoorsPerDay: run.volunteerDoorsPerDay,
+      candidateDoorsPerDay: run.candidateDoorsPerDay,
+    },
+    outcome,
+  };
+}
+
+// Plain-language copy for the "How the model works" view. It states the model's
+// formulas in prose and symbols, with no worked numbers, so the reference holds
+// for any plan.
+//
+// Sections follow the order the model computes them; the view numbers them
+// along that route.
+
+function para(text) {
+  return { type: "p", text: text };
+}
+
+function formula(text) {
+  return { type: "formula", text: text };
+}
+
+function universeSection() {
+  return {
+    id: "universe",
+    title: "One universe, sized from the vote goal",
+    blocks: [
+      para(
+        "You type the vote goal in. That number is the universe, the pool the field works. The " +
+          "calculator does not size it for you."
+      ),
+      formula("universe = vote goal"),
+      para(
+        "Everyone starts uncontacted, becomes a holdout once you have talked to them, and lands " +
+          "in confirmed when they signal they will vote with you. Nobody leaves the universe " +
+          "until they confirm. Volunteers and the candidate knock the same pool."
+      ),
+    ],
+  };
+}
+
+function capsSection() {
+  return {
+    id: "caps",
+    title: "What gets knocked each day",
+    blocks: [
+      para(
+        "Weekly hours convert to doors at the knock rate: the volunteers for the hours each " +
+          "gives, the candidate for their own."
+      ),
+      formula(
+        "volunteer doors/day = volunteers × hours per volunteer per week × knock rate ÷ 7\n" +
+          "candidate doors/day = candidate hours per week × knock rate ÷ 7"
+      ),
+    ],
+  };
+}
+
+function accrualSection() {
+  return {
+    id: "accrual",
+    title: "Contacts and confirmations accrue per door",
+    blocks: [
+      para(
+        "A knock reaches someone at your contact rate, and every reach is a conversation. A " +
+          "conversation confirms at your confirmation rate. Holdouts confirm on a later pass, at " +
+          "the same rate, so each pass compounds and adds less than the last."
+      ),
+      formula(
+        "conversations = knocks × contact rate\n" +
+          "confirmations = conversations × confirmation rate\n" +
+          "over k passes: 1 − (1 − contact rate × confirmation rate)^k"
+      ),
+      para(
+        "Each day's capacity goes to uncontacted doors first, and leftover knocks revisit " +
+          "holdouts. A knock that reaches no one is a lit drop. Once confirmations cross the " +
+          "vote goal, the field stops."
+      ),
+    ],
+  };
+}
+
+function turnoverSection() {
+  return {
+    id: "turnover",
+    title: "Volunteers turn over",
+    blocks: [
+      para(
+        "Each day volunteers gain recruits and lose a share of their count, floored at zero. " +
+          "Hold both steady and the count settles toward the steady state."
+      ),
+      formula(
+        "volunteers += recruits ÷ 7 − volunteers × attrition ÷ 7\n" +
+          "dV/dt = recruits − attrition × V\n" +
+          "steady state = recruitment ÷ attrition"
+      ),
+    ],
+  };
+}
+
+function paceSection() {
+  return {
+    id: "pace",
+    title: "The vote-goal pace line",
+    blocks: [
+      para(
+        "The pace line runs straight from zero today to the vote goal on election day. Above it, " +
+          "the goal crosses early. Below it, late. The timeline draws confirmations against it."
+      ),
+      formula("pace line = vote goal × elapsed days ÷ total campaign days"),
+    ],
+  };
+}
+
+function verdictSection() {
+  return {
+    id: "verdict",
+    title: "The final verdict",
+    blocks: [
+      para(
+        "One number comes out: the vote-goal projection. It says whether confirmations cross the " +
+          "goal, on what day, and by how much they fall short."
+      ),
+    ],
+  };
+}
+
+function explain() {
+  return {
+    lede:
+      "The model's math in plain language, so you can check the plan against how your field " +
+      "actually works.",
+    sections: [
+      universeSection(),
+      capsSection(),
+      accrualSection(),
+      turnoverSection(),
+      paceSection(),
+      verdictSection(),
+    ],
+  };
+}
+// The timeline's right-hand rail: one label per line and area, each anchored to
+// the height it finishes at and stacked so they never collide. Pure geometry so
+// the positioning can be tested without a DOM.
+
+// Band fills read over the panel, so they must stay legible as colours rather
+// than dissolving into the near-white background. The volunteer fill is navy's
+// hue carried at a lighter, more chromatic stop; a plain navy tint goes grey.
+var BAND_VOLUNTEER = "rgba(31,95,143,.32)";
+var BAND_CANDIDATE = "rgba(254,221,0,.28)";
+
+var MIN_GAP = 15;
+
+function railLabels(p, Y, yBot) {
+  var last = p.days[p.days.length - 1];
+  var volTop = Y(last.cumVolunteerContacts);
+  var convTop = Y(last.cumContacts);
+  var labels = [
+    { text: "CONVERSATIONS", color: "#001f33", line: convTop },
+    { text: "CONFIRMED VOTES", color: "#8a7500", line: Y(last.cumConfirmations) },
+    // The pace line ends at the vote goal, not at the top of the axis: when
+    // conversations outgrow the goal the axis top rises, the goal does not.
+    { text: "VOTE GOAL", color: "#4a5464", line: Y(p.voteGoal) },
+    // The filled areas get a swatch so they read as areas, not lines.
+    { text: "VOLUNTEER", color: "#4a5464", line: (volTop + yBot) / 2, swatch: BAND_VOLUNTEER },
+    { text: "CANDIDATE", color: "#4a5464", line: (convTop + volTop) / 2, swatch: BAND_CANDIDATE },
+  ].sort(function (a, b) { return a.line - b.line; });
+
+  labels.forEach(function (l, i) {
+    l.at = i === 0 ? l.line : Math.max(l.line, labels[i - 1].at + MIN_GAP);
+  });
+  var overflow = labels[labels.length - 1].at - yBot;
+  if (overflow > 0) labels.forEach(function (l) { l.at -= overflow; });
+  return labels;
+}
+
+// The scrub readout's day sheet as data: one row per knocker plus the campaign
+// total, each already carrying the columns the table shows. Pure so the
+// breakdown can be tested without a DOM.
+
+
+function hours(knocks, knockRate) {
+  return knockRate > 0 ? knocks / knockRate : 0;
+}
+
+function tallyRows(day, knockRate) {
+  return {
+    rows: [
+      {
+        label: "Volunteer",
+        band: BAND_VOLUNTEER,
+        conversations: day.cumVolunteerContacts,
+        confirmed: day.cumVolunteerConfirmations,
+        litDrops: day.cumVolunteerLitDrops,
+        hours: hours(day.cumVolunteerKnocks, knockRate),
+        volunteers: day.volunteers,
+      },
+      {
+        label: "Candidate",
+        band: BAND_CANDIDATE,
+        conversations: day.cumCandidateContacts,
+        confirmed: day.cumCandidateConfirmations,
+        litDrops: day.cumCandidateLitDrops,
+        hours: hours(day.cumCandidateKnocks, knockRate),
+        volunteers: null,
+      },
+    ],
+    total: {
+      label: "Total",
+      band: null,
+      conversations: day.cumContacts,
+      confirmed: day.cumConfirmations,
+      litDrops: day.cumLitDrops,
+      hours: hours(day.cumKnocks, knockRate),
+      volunteers: day.volunteers,
+    },
+  };
+}
+
+/* The DOM layer: read the controls, run the model, and draw the timeline and the
+   model view. Everything it touches lives under #drc so the artifact drops into
+   a host page without reaching outside. */
+
+
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var DAY = 86400000;
+  // Below this width the chart is too small for the rail labels; the legend
+  // below carries the key there instead. Mirrors the CSS media query.
+  var COMPACT = window.matchMedia("(max-width: 880px)");
+
+  // [inputId, readoutFormatter]; the output is "#v-" + id without its prefix.
+  var SLIDERS = [
+    ["s-volunteers", function (v) { return fmt(v) + "<small> now</small>"; }],
+    ["s-recruit", function (v) { return fmt(v) + "<small> / week</small>"; }],
+    ["s-attrition", function (v) { return v + "%<small> / week</small>"; }],
+    ["s-volhours", function (v) { return fmt(v) + "<small> / week</small>"; }],
+    ["s-candhours", function (v) { return fmt(v) + "<small> / week</small>"; }],
+    ["s-pace", function (v) { return fmt(v) + "<small> doors / hr</small>"; }],
+    ["s-contact", function (v) { return v + "%"; }],
+    ["s-confirm", function (v) { return v + "%"; }],
+  ];
+
+  var scrubDay = 0;
+  var firstRender = true;
+  var last = null;
+
+  function num(el) {
+    var v = parseFloat(el.value);
+    return isNaN(v) ? 0 : v;
+  }
+  function fmt(n) {
+    if (!isFinite(n)) return "∞";
+    return Math.round(n).toLocaleString("en-US");
+  }
+  function fmtDate(d) {
+    if (!d) return "—";
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+  function parseDate(value) {
+    return new Date(value + "T00:00:00");
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function read() {
+    return {
+      voteGoal: num($("f-target")),
+      volunteers: num($("s-volunteers")),
+      recruitPerWeek: num($("s-recruit")),
+      attritionPerWeek: num($("s-attrition")) / 100,
+      hoursPerVolunteerPerWeek: num($("s-volhours")),
+      candidateHoursPerWeek: num($("s-candhours")),
+      knockRate: num($("s-pace")),
+      contactRate: num($("s-contact")) / 100,
+      confirmationRate: num($("s-confirm")) / 100,
+      election: $("f-date").value ? parseDate($("f-date").value) : undefined,
+    };
+  }
+
+  function render() {
+    SLIDERS.forEach(function (s) {
+      var out = $("v-" + s[0].slice(2));
+      if (out) out.innerHTML = s[1](num($(s[0])));
+    });
+    var target = num($("f-target"));
+
+    if (!(target > 0)) {
+      setBlank("Enter a vote goal to draw the timeline.");
+      return;
+    }
+
+    var d = read();
+    var p;
+    try {
+      p = simulate(d);
+    } catch (err) {
+      setBlank(err.message.charAt(0).toUpperCase() + err.message.slice(1) + ".");
+      return;
+    }
+    last = { p: p };
+
+    if (firstRender) {
+      scrubDay = p.outcome.goalMetDay != null ? p.outcome.goalMetDay : p.totalDays;
+      firstRender = false;
+    }
+    scrubDay = Math.max(0, Math.min(p.totalDays, scrubDay));
+    var scrub = $("s-scrub");
+    scrub.max = String(p.totalDays);
+    scrub.value = String(scrubDay);
+
+    drawTimeline(p);
+    renderScrubReadout(p);
+  }
+
+  function onScrub() {
+    if (!last) return;
+    scrubDay = Math.max(0, Math.min(last.p.totalDays, num($("s-scrub"))));
+    drawTimeline(last.p);
+    renderScrubReadout(last.p);
+  }
+
+  // The timeline: conversations and confirmed votes against the straight
+  // vote-goal pace line. Conversations can climb past the goal when capacity
+  // outlasts the initial universe, so the scale follows the taller series. The
+  // scrubber is an invisible range laid over the plot so the whole chart is
+  // draggable.
+  function drawTimeline(p) {
+    var W = 820, H = 300, padL = 58, padT = 26, padB = 40;
+    var padR = COMPACT.matches ? 14 : 168;
+    var x0 = padL, x1 = W - padR, yTop = padT, yBot = H - padB;
+    var plotW = x1 - x0, plotH = yBot - yTop;
+    var totalDays = p.totalDays;
+    var last = p.days[p.days.length - 1];
+    var yMax = Math.max(p.voteGoal, last.cumContacts, last.cumConfirmations, 1);
+    var X = function (day) { return x0 + (day / totalDays) * plotW; };
+    var Y = function (v) { return yBot - (Math.max(0, Math.min(v, yMax)) / yMax) * plotH; };
+    var parts = [];
+
+    var scrub = $("s-scrub");
+    scrub.style.left = (x0 / W) * 100 + "%";
+    scrub.style.right = (padR / W) * 100 + "%";
+
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (f) {
+      var y = Y(yMax * f);
+      parts.push('<line x1="' + x0 + '" y1="' + y + '" x2="' + x1 + '" y2="' + y + '" stroke="#e7eef4" stroke-width="1"/>');
+      parts.push('<text x="' + (x0 - 8) + '" y="' + (y + 4) + '" text-anchor="end" fill="#4a5464" font-size="11">' + fmt(yMax * f) + "</text>");
+    });
+    parts.push('<text x="' + (x0 - 8) + '" y="' + (yTop - 10) + '" text-anchor="end" fill="#4a5464" font-size="10" letter-spacing="1">PEOPLE</text>');
+
+    parts.push('<line x1="' + x1 + '" y1="' + yTop + '" x2="' + x1 + '" y2="' + yBot + '" stroke="#001f33" stroke-width="1.5"/>');
+
+    // Conversations are two stacked areas by knocker: the volunteers' band
+    // under the candidate's. The shared pool is worked uncontacted-first, so
+    // the volunteer band keeps climbing as holdouts are revisited.
+    var volPts = p.days.map(function (day) { return X(day.day) + "," + Y(day.cumVolunteerContacts); });
+    var convPts = p.days.map(function (day) { return X(day.day) + "," + Y(day.cumContacts); });
+    parts.push('<polygon points="' + X(0) + "," + yBot + " " + volPts.join(" ") + " " + X(totalDays) + "," + yBot + '" fill="' + BAND_VOLUNTEER + '"/>');
+    parts.push('<polygon points="' + volPts.join(" ") + " " + convPts.slice().reverse().join(" ") + '" fill="' + BAND_CANDIDATE + '"/>');
+    parts.push('<polyline points="' + volPts.join(" ") + '" fill="none" stroke="#001f33" stroke-width="1" opacity="0.35"/>');
+    parts.push('<polyline points="' + convPts.join(" ") + '" fill="none" stroke="#001f33" stroke-width="2.5" stroke-linejoin="round"/>');
+
+    // Reference lines ride above the washes so they stay crisp where they cross.
+    if (p.schedule.gotvStart > p.today) {
+      var gd = (p.schedule.gotvStart - p.today) / DAY;
+      if (gd > 0 && gd <= totalDays) {
+        var gx = X(gd);
+        parts.push('<line x1="' + gx + '" y1="' + yTop + '" x2="' + gx + '" y2="' + yBot + '" stroke="#8a7500" stroke-width="1" stroke-dasharray="2 4" opacity="0.5"/>');
+        parts.push('<text x="' + gx + '" y="' + (yTop - 10) + '" text-anchor="middle" fill="#8a7500" font-size="10" letter-spacing="1">GOTV</text>');
+      }
+    }
+    parts.push('<line x1="' + X(0) + '" y1="' + Y(0) + '" x2="' + X(totalDays) + '" y2="' + Y(p.voteGoal) + '" stroke="#4a5464" stroke-width="2" stroke-dasharray="7 6"/>');
+
+    var pts = p.days.map(function (day) { return X(day.day) + "," + Y(day.cumConfirmations); });
+    parts.push('<polyline points="' + pts.join(" ") + '" fill="none" stroke="#8a7500" stroke-width="2.5" stroke-linejoin="round"/>');
+
+    var sd = p.days[scrubDay];
+    var sx = X(sd.day), sy = Y(sd.cumConfirmations);
+    parts.push('<line x1="' + sx + '" y1="' + yTop + '" x2="' + sx + '" y2="' + yBot + '" stroke="#001726" stroke-width="1" opacity="0.45"/>');
+    parts.push('<circle cx="' + sx + '" cy="' + sy + '" r="5.5" fill="#fedd00" stroke="#001726" stroke-width="2"/>');
+    var anchor = "middle", tx = sx, ty = sy - 11;
+    if (sx > x1 - 48) { anchor = "end"; tx = sx - 7; }
+    else if (sx < x0 + 48) { anchor = "start"; tx = sx + 7; }
+    if (ty < yTop + 8) ty = sy + 19;
+    parts.push('<text x="' + tx + '" y="' + ty + '" text-anchor="' + anchor + '" fill="#001726" font-size="11" font-weight="600" stroke="#f3f7fa" stroke-width="3" paint-order="stroke">' + fmt(sd.cumConfirmations) + "</text>");
+
+    parts.push('<text x="' + x0 + '" y="' + (yBot + 22) + '" text-anchor="start" fill="#4a5464" font-size="11">' + fmtDate(p.today) + "</text>");
+    parts.push('<text x="' + x1 + '" y="' + (yBot + 22) + '" text-anchor="end" fill="#001f33" font-size="11" font-weight="600">' + fmtDate(p.election) + "</text>");
+
+    // One label per line and area sits in a right-hand rail, each tied back to
+    // the height it finishes at by a leader.
+    if (!COMPACT.matches) {
+      var railX = x1 + 20;
+      railLabels(p, Y, yBot).forEach(function (l) {
+        parts.push('<line x1="' + x1 + '" y1="' + l.line + '" x2="' + (railX - 6) + '" y2="' + l.at + '" stroke="' + l.color + '" stroke-width="1" opacity="0.5"/>');
+        if (l.swatch) {
+          parts.push('<rect x="' + railX + '" y="' + (l.at - 4.5) + '" width="13" height="9" fill="' + l.swatch + '" stroke="#c9d7e2" stroke-width="1"/>');
+        }
+        parts.push('<text x="' + (railX + (l.swatch ? 18 : 0)) + '" y="' + (l.at + 3.5) + '" fill="' + l.color + '" font-size="10" font-weight="600" letter-spacing="0.05em">' + l.text + "</text>");
+      });
+    }
+    $("timeline-chart").innerHTML = parts.join("");
+  }
+
+  // The day's tally: a table, split by knocker, closed by a total row.
+  function renderScrubReadout(p) {
+    var day = p.days[scrubDay];
+    var tally = tallyRows(day, p.values.knockRate);
+    var row = function (r) {
+      var cell = function (label, value) {
+        return '<td data-label="' + esc(label) + '">' + value + "</td>";
+      };
+      return "<tr>" +
+        '<th scope="row">' +
+          (r.band ? '<i class="tally-key" style="background:' + r.band + '"></i>' : "") +
+          esc(r.label) +
+        "</th>" +
+        cell("Conversations", fmt(r.conversations)) +
+        cell("Confirmed", fmt(r.confirmed)) +
+        cell("Lit drops", fmt(r.litDrops)) +
+        cell("Hours", fmt(r.hours)) +
+        (r.volunteers == null
+          ? '<td data-label="Volunteers" class="tally-none">—</td>'
+          : cell("Volunteers", fmt(r.volunteers))) +
+        "</tr>";
+    };
+    $("o-scrub-readout").innerHTML =
+      '<table class="tally">' +
+        "<caption><b>" + fmtDate(day.date) + "</b> · Day " + day.day + " of " + p.totalDays + "</caption>" +
+        "<thead><tr>" +
+          '<th scope="col"><span class="sr-only">Knocker</span></th>' +
+          '<th scope="col">Conversations</th>' +
+          '<th scope="col">Confirmed</th>' +
+          '<th scope="col">Lit drops</th>' +
+          '<th scope="col">Hours</th>' +
+          '<th scope="col">Volunteers</th>' +
+        "</tr></thead>" +
+        "<tbody>" + tally.rows.map(row).join("") + "</tbody>" +
+        "<tfoot>" + row(tally.total) + "</tfoot>" +
+      "</table>";
+  }
+
+  // The "How the model works" view: static reference copy, rendered once.
+  function renderModel() {
+    var ex = explain();
+    var html = '<p class="model-lede">' + esc(ex.lede) + "</p>";
+    ex.sections.forEach(function (s, i) {
+      var blocks = "";
+      s.blocks.forEach(function (b) {
+        blocks += b.type === "formula"
+          ? '<div class="model-plate"><p class="model-eq">' + esc(b.text) + "</p></div>"
+          : "<p>" + esc(b.text) + "</p>";
+      });
+      html += '<section class="model-step">' +
+        '<span class="model-num">' + String(i + 1).padStart(2, "0") + "</span>" +
+        "<h2>" + esc(s.title) + "</h2>" +
+        '<div class="model-body">' + blocks + "</div>" +
+        "</section>";
+    });
+    $("o-model").innerHTML = html;
+  }
+
+  // Swap between the calculator and the model view, moving focus so keyboard
+  // and screen-reader users land in the view that just opened.
+  function showView(which) {
+    var open = which === "model";
+    $("drc-calc").hidden = open;
+    $("drc-model").hidden = !open;
+    if (open) $("model-title").focus();
+    else $("open-model").focus();
+  }
+
+  function setBlank(message) {
+    last = null;
+    $("o-scrub-readout").textContent = message || "";
+    $("timeline-chart").innerHTML = "";
+  }
+
+  function init() {
+    $("f-target").value = DEFAULTS.voteGoal;
+    $("f-date").value = formatDefaultElection(new Date());
+    $("s-volunteers").value = DEFAULTS.volunteers;
+    $("s-recruit").value = DEFAULTS.recruitPerWeek;
+    $("s-attrition").value = DEFAULTS.attritionPerWeek * 100;
+    $("s-volhours").value = DEFAULTS.hoursPerVolunteerPerWeek;
+    $("s-candhours").value = DEFAULTS.candidateHoursPerWeek;
+    $("s-pace").value = DEFAULTS.knockRate;
+    $("s-contact").value = DEFAULTS.contactRate * 100;
+    $("s-confirm").value = DEFAULTS.confirmationRate * 100;
+
+    SLIDERS.forEach(function (s) { $(s[0]).addEventListener("input", render); });
+    $("f-target").addEventListener("input", render);
+    $("f-date").addEventListener("input", render);
+    $("s-scrub").addEventListener("input", onScrub);
+    COMPACT.addEventListener("change", render);
+    $("open-model").addEventListener("click", function () { showView("model"); });
+    $("close-model").addEventListener("click", function () { showView("calc"); });
+    $("drc-model").addEventListener("keydown", function (e) {
+      if (e.key === "Escape") showView("calc");
+    });
+    renderModel();
+    render();
+  }
+
+  if (document.readyState !== "loading") init();
+  else document.addEventListener("DOMContentLoaded", init);
+})();
+
+</script>
+</body>
+</html>

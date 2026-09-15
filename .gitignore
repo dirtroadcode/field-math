@@ -1,0 +1,6 @@
+.direnv/
+.env.local
+.env*.local
+.pi/
+tmp/
+.worktrees/
